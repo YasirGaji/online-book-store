@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: my_database
+      MYSQL_USER: my_user
+      MYSQL_PASSWORD: my_password
+    volumes:
+      - ./db/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  app:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    depends_on:
+      - mysql
+    command: >
+      sh -c "cd /app/db &&
+      mysql -h mysql -u my_user -pmy_password my_database < create_tables.sql &&
+      cd /app &&
+      python setup.py install &&
+      python server.py"
